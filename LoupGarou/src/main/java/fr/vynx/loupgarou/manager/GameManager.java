@@ -34,7 +34,7 @@ public class GameManager {
     public enum NightPhase { VOLEUR, CHIEN_LOUP, CUPIDON, VOYANTE, GARDE, LOUPS, LOUP_BLANC, SORCIERE, ASSASSIN, VAMPIRE, PYROMANE, JOUEUR_FLUTE }
     private final Queue<NightPhase> nightQueue = new LinkedList<>();
 
-    // --- SYSTÈME DE MENU FORCÉ ---
+    // --- SYSTÈME DE MENU FORCÉ & FLUIDE ---
     private class PersistentMenu {
         String title;
         Runnable opener;
@@ -50,6 +50,13 @@ public class GameManager {
         activeMenus.put(p.getUniqueId(), new PersistentMenu(title, opener));
         Bukkit.getScheduler().runTaskLater(MainLoupGarou.getInstance(), opener, 10L);
     }
+
+    // NOUVEAU : Met à jour un sous-menu INSTANTANÉMENT sans fermer l'inventaire
+    public void updateMenu(Player p, String title, Runnable opener) {
+        activeMenus.put(p.getUniqueId(), new PersistentMenu(title, opener));
+        opener.run();
+    }
+    // --------------------------------------
 
     public void addPlayer(Player player) {
         if (!players.contains(player.getUniqueId())) {
@@ -117,6 +124,14 @@ public class GameManager {
 
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.getWorld().setTime(18000);
+
+            // INVISIBILITÉ TOTALE : On cache tous les joueurs physiquement
+            for (Player target : Bukkit.getOnlinePlayers()) {
+                if (!p.equals(target)) {
+                    p.hidePlayer(MainLoupGarou.getInstance(), target);
+                }
+            }
+
             Role r = getPlayerRole(p);
             if (r instanceof RolePetiteFille) {
                 p.sendMessage("§9Tu espionnes dans la nuit...");
@@ -183,7 +198,6 @@ public class GameManager {
                 Bukkit.broadcastMessage("§cLes Loups se réveillent...");
                 boolean w = false;
                 for (UUID u : players) {
-                    // C'est ici que l'instanceof corrige le bug des menus pour le Chien-Loup !
                     if (playerRoles.get(u) instanceof RoleLoupGarou) {
                         Player l = Bukkit.getPlayer(u);
                         if (l != null) { w = true; setMenu(l, "§cQui dévorer ce soir ?", () -> VoteMenu.openWolfMenu(l)); }
@@ -236,6 +250,16 @@ public class GameManager {
         }
     }
 
+    // --- TRANSITIONS FLUIDES SOUS-MENUS ---
+    public void openSorciereKill(Player p) {
+        updateMenu(p, "§cQui assassiner ? (Sorcière)", () -> VoteMenu.openSorciereKillMenu(p));
+    }
+
+    public void openPyromaneAsperger(Player p) {
+        updateMenu(p, "§6Qui asperger d'essence ?", () -> VoteMenu.openPyromaneAspergerMenu(p));
+    }
+    // --------------------------------------
+
     public void voleurChoose(String roleName) {
         Player p = getPlayerByRole(RoleVoleur.class);
         if (p != null) {
@@ -257,8 +281,8 @@ public class GameManager {
 
     public void cupidonShoot(Player p, UUID tId, boolean isFirst) {
         if (isFirst) {
-            lover1 = tId; p.closeInventory();
-            setMenu(p, "§dFlèche (2/2)", () -> VoteMenu.openCupidonMenu(p, "§dFlèche (2/2)"));
+            lover1 = tId;
+            updateMenu(p, "§dFlèche (2/2)", () -> VoteMenu.openCupidonMenu(p, "§dFlèche (2/2)"));
         } else {
             activeMenus.remove(p.getUniqueId());
             lover2 = tId; p.closeInventory();
@@ -272,8 +296,7 @@ public class GameManager {
     public void fluteCharm(Player p, UUID tId, boolean isFirst) {
         if (!charmedPlayers.contains(tId)) charmedPlayers.add(tId);
         if (isFirst) {
-            p.closeInventory();
-            setMenu(p, "§aCharmer (2/2)", () -> VoteMenu.openFluteMenu(p, "§aCharmer (2/2)"));
+            updateMenu(p, "§aCharmer (2/2)", () -> VoteMenu.openFluteMenu(p, "§aCharmer (2/2)"));
         } else {
             activeMenus.remove(p.getUniqueId());
             p.closeInventory();
@@ -324,7 +347,6 @@ public class GameManager {
         wolfVotes.put(wId, tId);
         int l = 0;
         for (UUID u : players) {
-            // C'est ici que l'instanceof empêche le comptage des faux loups pour le vote !
             if (playerRoles.get(u) instanceof RoleLoupGarou) l++;
         }
         if (wolfVotes.size() >= l) {
@@ -425,7 +447,6 @@ public class GameManager {
             else if (r instanceof RoleLoupGarouBlanc) lb++;
             else if (r instanceof RoleAssassin) ass++;
             else if (r instanceof RolePyromane) pyro++;
-                // L'instanceof sécurise enfin les conditions de victoire !
             else if (r instanceof RoleLoupGarou) w++;
             else v++;
         }
@@ -475,9 +496,9 @@ public class GameManager {
 
             for (Player p : Bukkit.getOnlinePlayers()) {
                 p.setGameMode(GameMode.ADVENTURE);
-                for (PotionEffect effect : p.getActivePotionEffects()) {
-                    p.removePotionEffect(effect.getType());
-                }
+                for (PotionEffect effect : p.getActivePotionEffects()) { p.removePotionEffect(effect.getType()); }
+                // ON RÉAFFICHE TOUS LES JOUEURS
+                for (Player target : Bukkit.getOnlinePlayers()) { p.showPlayer(MainLoupGarou.getInstance(), target); }
             }
 
             Bukkit.getScheduler().runTaskLater(MainLoupGarou.getInstance(), this::resetGame, 200L);
@@ -487,9 +508,9 @@ public class GameManager {
             Bukkit.broadcastMessage("§eLe jour se lève !");
             for (Player p : Bukkit.getOnlinePlayers()) {
                 p.getWorld().setTime(6000);
-                for (PotionEffect effect : p.getActivePotionEffects()) {
-                    p.removePotionEffect(effect.getType());
-                }
+                for (PotionEffect effect : p.getActivePotionEffects()) { p.removePotionEffect(effect.getType()); }
+                // ON RÉAFFICHE TOUS LES JOUEURS
+                for (Player target : Bukkit.getOnlinePlayers()) { p.showPlayer(MainLoupGarou.getInstance(), target); }
             }
             isFirstDay = false;
         }

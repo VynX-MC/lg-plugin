@@ -2,7 +2,6 @@ package fr.vynx.loupgarou.listeners;
 
 import fr.vynx.loupgarou.MainLoupGarou;
 import fr.vynx.loupgarou.manager.GameManager;
-import fr.vynx.loupgarou.roles.Role;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -11,7 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.UUID; // L'importation qui corrige tes 46 erreurs !
+import java.util.UUID;
 
 public class MenuListener implements Listener {
 
@@ -37,7 +36,7 @@ public class MenuListener implements Listener {
                     player.sendMessage("§aTu as utilisé ta Potion de Vie !");
                     player.closeInventory(); gm.sorciereUseLifePotion();
                 } else if (clicked.getType() == Material.SPIDER_EYE) {
-                    fr.vynx.loupgarou.menu.VoteMenu.openSorciereKillMenu(player);
+                    gm.openSorciereKill(player); // Transition fluide !
                 } else if (clicked.getType() == Material.PAPER) {
                     player.closeInventory(); gm.nextNightPhase();
                 }
@@ -46,7 +45,7 @@ public class MenuListener implements Listener {
 
             if (title.equals("§6Action du Pyromane")) {
                 if (clicked.getType() == Material.WATER_BUCKET) {
-                    fr.vynx.loupgarou.menu.VoteMenu.openPyromaneAspergerMenu(player);
+                    gm.openPyromaneAsperger(player); // Transition fluide !
                 } else if (clicked.getType() == Material.FLINT_AND_STEEL) {
                     player.sendMessage("§cTu as tout enflammé !");
                     player.closeInventory(); gm.pyromaneIgnite();
