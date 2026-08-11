@@ -34,7 +34,6 @@ public class ChatListener implements Listener {
                         if (targetRole instanceof RoleLoupGarou) {
                             target.sendMessage("§c[Chat Loup] " + player.getName() + " : §7" + event.getMessage());
                         } else if (targetRole instanceof RolePetiteFille) {
-                            // La Petite Fille entend le message mais le nom est caché !
                             target.sendMessage("§8[Murmure de Loup] §7" + event.getMessage());
                         }
                     }

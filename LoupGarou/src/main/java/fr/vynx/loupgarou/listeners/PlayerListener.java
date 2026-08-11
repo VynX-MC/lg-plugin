@@ -1,26 +1,37 @@
 package fr.vynx.loupgarou.listeners;
 
 import fr.vynx.loupgarou.MainLoupGarou;
-import org.bukkit.entity.Player;
+import fr.vynx.loupgarou.manager.GameManager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerListener implements Listener {
 
-    // @EventHandler indique à notre serveur d'écouter attentivement cet événement spécifique
     @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
+    public void onJoin(PlayerJoinEvent event) {
+        event.setJoinMessage("§7[+] §e" + event.getPlayer().getName());
+    }
 
-        // On vérifie si ce joueur était inscrit dans notre partie
-        if (MainLoupGarou.getInstance().getGameManager().getPlayers().contains(player.getUniqueId())) {
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event) {
+        event.setQuitMessage("§7[-] §e" + event.getPlayer().getName());
+        MainLoupGarou.getInstance().getGameManager().removePlayer(event.getPlayer());
+    }
 
-            // Si oui, on le retire proprement pour ne pas faire bugger le jeu
-            MainLoupGarou.getInstance().getGameManager().removePlayer(player);
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent event) {
+        GameManager gm = MainLoupGarou.getInstance().getGameManager();
 
-            // Petit bonus : on peut afficher un message aux autres joueurs si on veut
-            System.out.println("[Loup-Garou] " + player.getName() + " s'est deconnecté et a ete retire de la partie.");
+        if (gm.getPlayers().contains(event.getPlayer().getUniqueId())) {
+            if (gm.getState() != GameManager.GameState.WAITING && gm.getState() != GameManager.GameState.ENDED) {
+                if (event.getFrom().getBlockX() != event.getTo().getBlockX() ||
+                        event.getFrom().getBlockZ() != event.getTo().getBlockZ()) {
+                    event.setCancelled(true); // On fige les joueurs en jeu
+                }
+            }
         }
     }
 }

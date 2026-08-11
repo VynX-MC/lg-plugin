@@ -1,31 +1,13 @@
 package fr.vynx.loupgarou.roles;
-
 import org.bukkit.entity.Player;
-
 public class RoleSorciere extends Role {
-
-    private boolean hasLifePotion = true;
-    private boolean hasDeathPotion = true;
-
-    public RoleSorciere(Player player) { super(player); }
-
-    @Override
+    private boolean lifePotion = true, deathPotion = true;
+    public RoleSorciere(Player p) { super(p); }
     public String getName() { return "§dSorcière"; }
-
-    @Override
-    public String getDescription() {
-        return "§7Tu possèdes une potion de vie et une de mort utilisables une seule fois dans la partie.";
-    }
-
-    @Override
-    public void onNightAction() {
-        // La sorcière ne joue pas tout de suite, elle doit attendre que les loups finissent !
-        getPlayer().sendMessage("§8Attends que les loups fassent leur choix...");
-    }
-
-    public boolean hasLifePotion() { return hasLifePotion; }
-    public void useLifePotion() { this.hasLifePotion = false; }
-
-    public boolean hasDeathPotion() { return hasDeathPotion; }
-    public void useDeathPotion() { this.hasDeathPotion = false; }
+    public String getDescription() { return "§7Tu as une potion de vie et une de mort (1 utilisation chacune)."; }
+    public void onNightAction() {}
+    public boolean hasLifePotion() { return lifePotion; }
+    public void useLifePotion() { lifePotion = false; }
+    public boolean hasDeathPotion() { return deathPotion; }
+    public void useDeathPotion() { deathPotion = false; }
 }

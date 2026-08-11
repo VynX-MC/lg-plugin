@@ -11,7 +11,6 @@ public class GameListener implements Listener {
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
-        // On empêche la destruction de la map (personne ne peut casser de blocs)
         event.setCancelled(true);
     }
 

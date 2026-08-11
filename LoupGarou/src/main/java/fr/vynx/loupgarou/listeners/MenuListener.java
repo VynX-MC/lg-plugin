@@ -3,8 +3,6 @@ package fr.vynx.loupgarou.listeners;
 import fr.vynx.loupgarou.MainLoupGarou;
 import fr.vynx.loupgarou.manager.GameManager;
 import fr.vynx.loupgarou.roles.Role;
-import fr.vynx.loupgarou.roles.RoleCupidon;
-import fr.vynx.loupgarou.roles.RoleVoyante;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -12,6 +10,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.UUID; // L'importation qui corrige tes 46 erreurs !
 
 public class MenuListener implements Listener {
 
@@ -21,92 +21,96 @@ public class MenuListener implements Listener {
         GameManager gm = MainLoupGarou.getInstance().getGameManager();
         Player player = (Player) event.getWhoClicked();
 
-        if (title.equals("§cQui dévorer ce soir ?") || title.equals("§eVote du Village") ||
-                title.equals("§6Élection du Maire") || title.equals("§6Choix du Successeur") ||
-                title.equals("§dVision de la Voyante") || title.equals("§dPotions de la Sorcière") ||
-                title.equals("§cQui assassiner ?") || title.contains("Flèche de Cupidon") ||
-                title.equals("§2Dernier tir du Chasseur !")) {
+        if (title.contains("Qui ") || title.contains("Vote") || title.contains("Élection") ||
+                title.contains("Successeur") || title.contains("Vision") || title.contains("Potions") ||
+                title.contains("Flèche") || title.contains("tir") || title.contains("Action") ||
+                title.contains("camp") || title.contains("rôle") || title.contains("Charmer") ||
+                title.contains("Trahir")) {
 
             event.setCancelled(true);
             ItemStack clicked = event.getCurrentItem();
             if (clicked == null || clicked.getItemMeta() == null) return;
 
-            // Gestion Potions Sorcière
+            // --- MENUS SPÉCIAUX ---
             if (title.equals("§dPotions de la Sorcière")) {
                 if (clicked.getType() == Material.GLISTERING_MELON_SLICE) {
                     player.sendMessage("§aTu as utilisé ta Potion de Vie !");
-                    gm.sorciereUseLifePotion();
-                    player.closeInventory();
+                    player.closeInventory(); gm.sorciereUseLifePotion();
                 } else if (clicked.getType() == Material.SPIDER_EYE) {
                     fr.vynx.loupgarou.menu.VoteMenu.openSorciereKillMenu(player);
                 } else if (clicked.getType() == Material.PAPER) {
-                    player.sendMessage("§fTu décides de ne rien faire.");
-                    player.closeInventory();
-                    gm.nextNightPhase();
+                    player.closeInventory(); gm.nextNightPhase();
                 }
                 return;
             }
 
+            if (title.equals("§6Action du Pyromane")) {
+                if (clicked.getType() == Material.WATER_BUCKET) {
+                    fr.vynx.loupgarou.menu.VoteMenu.openPyromaneAspergerMenu(player);
+                } else if (clicked.getType() == Material.FLINT_AND_STEEL) {
+                    player.sendMessage("§cTu as tout enflammé !");
+                    player.closeInventory(); gm.pyromaneIgnite();
+                } else if (clicked.getType() == Material.PAPER) {
+                    player.closeInventory(); gm.nextNightPhase();
+                }
+                return;
+            }
+
+            if (title.equals("§bChoisis ton camp")) {
+                player.closeInventory();
+                gm.chienLoupChoose(clicked.getType() == Material.BONE);
+                return;
+            }
+
+            if (title.equals("§8Choisis ton nouveau rôle")) {
+                player.closeInventory();
+                gm.voleurChoose(clicked.getItemMeta().getDisplayName());
+                return;
+            }
+
+            if (title.equals("§fTrahir un Loup ?") && clicked.getType() == Material.PAPER) {
+                player.closeInventory(); gm.nextNightPhase(); return;
+            }
+
+            // --- MENUS AVEC TÊTES DE JOUEURS ---
             if (clicked.getType() == Material.PLAYER_HEAD) {
                 String targetName = clicked.getItemMeta().getDisplayName().substring(2);
                 Player target = Bukkit.getPlayerExact(targetName);
                 if (target == null) return;
+                UUID tId = target.getUniqueId();
 
                 if (title.equals("§cQui dévorer ce soir ?")) {
-                    player.sendMessage("§aTu as voté (Loup) contre §e" + targetName);
-                    gm.registerWolfVote(player.getUniqueId(), target.getUniqueId());
-
+                    gm.registerWolfVote(player.getUniqueId(), tId);
                 } else if (title.equals("§eVote du Village")) {
-                    player.sendMessage("§aTu as voté (Village) contre §e" + targetName);
-                    gm.registerDayVote(player.getUniqueId(), target.getUniqueId());
-
+                    gm.registerDayVote(player.getUniqueId(), tId);
                 } else if (title.equals("§6Élection du Maire")) {
-                    player.sendMessage("§aTu as voté pour élire §6" + targetName);
-                    gm.registerElectionVote(player.getUniqueId(), target.getUniqueId());
-
+                    gm.registerElectionVote(player.getUniqueId(), tId);
                 } else if (title.equals("§6Choix du Successeur")) {
-                    player.sendMessage("§aTu as désigné §6" + targetName);
-                    gm.setMayor(target.getUniqueId());
-                    player.closeInventory();
-
+                    gm.setMayor(tId); player.closeInventory();
                 } else if (title.equals("§dVision de la Voyante")) {
-                    Role myRole = gm.getPlayerRole(player);
-                    if (myRole instanceof RoleVoyante) {
-                        Role targetRole = gm.getPlayerRole(target);
-                        player.sendMessage("§dVision : §e" + target.getName() + " §dest " + targetRole.getName());
-                        player.closeInventory();
-                        gm.nextNightPhase();
-                    }
-
-                } else if (title.equals("§cQui assassiner ?")) {
-                    player.sendMessage("§cTu as jeté ta Potion de Mort sur §e" + targetName);
-                    gm.sorciereUseDeathPotion(target.getUniqueId());
-
-                } else if (title.contains("Flèche de Cupidon")) {
-                    Role myRole = gm.getPlayerRole(player);
-                    if (myRole instanceof RoleCupidon) {
-                        RoleCupidon cup = (RoleCupidon) myRole;
-                        if (cup.getFirstLover() == null) {
-                            cup.setFirstLover(target.getUniqueId());
-                            player.sendMessage("§dPremier amoureux choisi. Choisis le deuxième !");
-                            fr.vynx.loupgarou.menu.VoteMenu.openCupidonMenu(player, "§dFlèche de Cupidon (2/2)");
-                        } else {
-                            if (cup.getFirstLover().equals(target.getUniqueId())) {
-                                player.sendMessage("§cTu dois choisir un joueur différent !");
-                                return;
-                            }
-                            player.sendMessage("§dLes amoureux sont liés pour la vie !");
-                            player.closeInventory();
-                            gm.setLovers(cup.getFirstLover(), target.getUniqueId());
-                        }
-                    }
+                    player.sendMessage("§dVision : §e" + target.getName() + " §dest " + gm.getPlayerRole(target).getName());
+                    player.closeInventory(); gm.nextNightPhase(); return;
+                } else if (title.equals("§cQui assassiner ? (Sorcière)")) {
+                    player.closeInventory(); gm.sorciereUseDeathPotion(tId); return;
+                } else if (title.equals("§3Qui protéger ?")) {
+                    player.closeInventory(); gm.registerGarde(tId); return;
+                } else if (title.equals("§4Qui assassiner ?")) {
+                    player.closeInventory(); gm.registerAssassin(tId); return;
+                } else if (title.equals("§5Qui mordre ce soir ?")) {
+                    player.closeInventory(); gm.vampireBite(tId); return;
+                } else if (title.equals("§6Qui asperger d'essence ?")) {
+                    player.closeInventory(); gm.pyromaneAsperger(tId); return;
+                } else if (title.equals("§fTrahir un Loup ?")) {
+                    player.closeInventory(); gm.loupBlancKill(tId); return;
                 } else if (title.equals("§2Dernier tir du Chasseur !")) {
-                    player.sendMessage("§2PAN ! Tu as abattu §e" + targetName);
-                    player.closeInventory();
-                    gm.chasseurShoot(target.getUniqueId());
+                    player.closeInventory(); gm.chasseurShoot(tId); return;
+                } else if (title.contains("Charmer")) {
+                    gm.fluteCharm(player, tId, title.contains("1/2")); return;
+                } else if (title.contains("Flèche")) {
+                    gm.cupidonShoot(player, tId, title.contains("1/2")); return;
                 }
 
-                if (!title.contains("Flèche de Cupidon")) player.closeInventory();
+                if (!title.contains("Flèche") && !title.contains("Charmer")) player.closeInventory();
             }
         }
     }
