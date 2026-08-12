@@ -29,7 +29,7 @@ public class PlayerListener implements Listener {
             if (gm.getState() != GameManager.GameState.WAITING && gm.getState() != GameManager.GameState.ENDED) {
                 if (event.getFrom().getBlockX() != event.getTo().getBlockX() ||
                         event.getFrom().getBlockZ() != event.getTo().getBlockZ()) {
-                    event.setCancelled(true); // On fige les joueurs en jeu
+                    event.setCancelled(true);
                 }
             }
         }

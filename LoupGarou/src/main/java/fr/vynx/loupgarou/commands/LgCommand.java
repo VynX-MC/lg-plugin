@@ -50,8 +50,6 @@ public class LgCommand implements CommandExecutor {
                 player.sendMessage("§cTu n'es pas dans la partie ou tu es mort !");
                 return true;
             }
-
-            // GESTION DU MAIRE ET DU TRIBUNAL
             if (gm.getState() == GameManager.GameState.ELECTION) {
                 VoteMenu.openElectionMenu(player);
             } else if (gm.getState() == GameManager.GameState.DAY) {

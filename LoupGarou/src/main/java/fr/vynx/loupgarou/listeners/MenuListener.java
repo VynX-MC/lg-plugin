@@ -30,7 +30,6 @@ public class MenuListener implements Listener {
             ItemStack clicked = event.getCurrentItem();
             if (clicked == null || clicked.getItemMeta() == null) return;
 
-            // --- MENUS SPÉCIAUX ---
             if (title.equals("§dPotions de la Sorcière")) {
                 if (clicked.getType() == Material.GLISTERING_MELON_SLICE) {
                     player.sendMessage("§aTu as utilisé ta Potion de Vie !");
@@ -71,7 +70,6 @@ public class MenuListener implements Listener {
                 player.closeInventory(); gm.nextNightPhase(); return;
             }
 
-            // --- MENUS AVEC TÊTES DE JOUEURS ---
             if (clicked.getType() == Material.PLAYER_HEAD) {
                 String targetName = clicked.getItemMeta().getDisplayName().substring(2);
                 Player target = Bukkit.getPlayerExact(targetName);

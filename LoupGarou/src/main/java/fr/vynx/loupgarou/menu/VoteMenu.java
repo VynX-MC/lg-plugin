@@ -14,7 +14,6 @@ import java.util.UUID;
 
 public class VoteMenu {
 
-    // --- MENUS CLASSIQUES ---
     public static void openWolfMenu(Player wolf) { openTargetMenu(wolf, "§cQui dévorer ce soir ?", false); }
     public static void openDayVoteMenu(Player voter) { openTargetMenu(voter, "§eVote du Village", true); }
     public static void openElectionMenu(Player voter) { openTargetMenu(voter, "§6Élection du Maire", true); }
@@ -25,7 +24,6 @@ public class VoteMenu {
     public static void openCupidonMenu(Player cupidon, String title) { openTargetMenu(cupidon, title, true); }
     public static void openChasseurMenu(Player chasseur) { openTargetMenu(chasseur, "§2Dernier tir du Chasseur !", false); }
 
-    // --- NOUVEAUX MENUS CIBLÉS ---
     public static void openVampireMenu(Player vampire) { openTargetMenu(vampire, "§5Qui mordre ce soir ?", false); }
     public static void openFluteMenu(Player flute, String title) { openTargetMenu(flute, title, false); }
     public static void openPyromaneAspergerMenu(Player pyro) { openTargetMenu(pyro, "§6Qui asperger d'essence ?", false); }
@@ -44,7 +42,6 @@ public class VoteMenu {
         loupBlanc.openInventory(inv);
     }
 
-    // --- MENUS À CHOIX MULTIPLES ---
     public static void openSorciereMenu(Player sorciere, String victimName, boolean hasLife, boolean hasDeath) {
         Inventory inv = Bukkit.createInventory(null, 27, "§dPotions de la Sorcière");
         inv.setItem(11, createItem(hasLife && victimName != null ? Material.GLISTERING_MELON_SLICE : Material.BARRIER, hasLife && victimName != null ? "§aSauver " + victimName : "§cPlus de Potion"));
@@ -76,7 +73,6 @@ public class VoteMenu {
         voleur.openInventory(inv);
     }
 
-    // --- UTILITAIRES ---
     private static void openTargetMenu(Player viewer, String title, boolean showSelf) {
         Inventory inv = Bukkit.createInventory(null, 27, title);
         int slot = 0;

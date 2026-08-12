@@ -34,7 +34,6 @@ public class GameManager {
     public enum NightPhase { VOLEUR, CHIEN_LOUP, CUPIDON, VOYANTE, GARDE, LOUPS, LOUP_BLANC, SORCIERE, ASSASSIN, VAMPIRE, PYROMANE, JOUEUR_FLUTE }
     private final Queue<NightPhase> nightQueue = new LinkedList<>();
 
-    // --- SYSTÈME DE MENU FORCÉ & FLUIDE ---
     private class PersistentMenu {
         String title;
         Runnable opener;
@@ -51,12 +50,10 @@ public class GameManager {
         Bukkit.getScheduler().runTaskLater(MainLoupGarou.getInstance(), opener, 10L);
     }
 
-    // NOUVEAU : Met à jour un sous-menu INSTANTANÉMENT sans fermer l'inventaire
     public void updateMenu(Player p, String title, Runnable opener) {
         activeMenus.put(p.getUniqueId(), new PersistentMenu(title, opener));
         opener.run();
     }
-    // --------------------------------------
 
     public void addPlayer(Player player) {
         if (!players.contains(player.getUniqueId())) {
@@ -125,7 +122,6 @@ public class GameManager {
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.getWorld().setTime(18000);
 
-            // INVISIBILITÉ TOTALE : On cache tous les joueurs physiquement
             for (Player target : Bukkit.getOnlinePlayers()) {
                 if (!p.equals(target)) {
                     p.hidePlayer(MainLoupGarou.getInstance(), target);
@@ -250,7 +246,6 @@ public class GameManager {
         }
     }
 
-    // --- TRANSITIONS FLUIDES SOUS-MENUS ---
     public void openSorciereKill(Player p) {
         updateMenu(p, "§cQui assassiner ? (Sorcière)", () -> VoteMenu.openSorciereKillMenu(p));
     }
@@ -258,7 +253,6 @@ public class GameManager {
     public void openPyromaneAsperger(Player p) {
         updateMenu(p, "§6Qui asperger d'essence ?", () -> VoteMenu.openPyromaneAspergerMenu(p));
     }
-    // --------------------------------------
 
     public void voleurChoose(String roleName) {
         Player p = getPlayerByRole(RoleVoleur.class);
@@ -497,7 +491,6 @@ public class GameManager {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 p.setGameMode(GameMode.ADVENTURE);
                 for (PotionEffect effect : p.getActivePotionEffects()) { p.removePotionEffect(effect.getType()); }
-                // ON RÉAFFICHE TOUS LES JOUEURS
                 for (Player target : Bukkit.getOnlinePlayers()) { p.showPlayer(MainLoupGarou.getInstance(), target); }
             }
 
@@ -509,7 +502,6 @@ public class GameManager {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 p.getWorld().setTime(6000);
                 for (PotionEffect effect : p.getActivePotionEffects()) { p.removePotionEffect(effect.getType()); }
-                // ON RÉAFFICHE TOUS LES JOUEURS
                 for (Player target : Bukkit.getOnlinePlayers()) { p.showPlayer(MainLoupGarou.getInstance(), target); }
             }
             isFirstDay = false;

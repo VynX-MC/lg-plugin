@@ -16,16 +16,12 @@ public class GameListener implements Listener {
 
     @EventHandler
     public void onHunger(FoodLevelChangeEvent event) {
-        // On empêche les joueurs d'avoir faim, pas besoin de manger dans un Loup-Garou !
         event.setCancelled(true);
     }
 
     @EventHandler
     public void onDamage(EntityDamageEvent event) {
-        // On vérifie que celui qui prend le dégât est bien un joueur
         if (event.getEntity() instanceof Player) {
-            // On bloque tous les dégâts (chute, coups de poing, lave...)
-            // Les vrais meurtres seront gérés par le code des Loups-Garous plus tard !
             event.setCancelled(true);
         }
     }
